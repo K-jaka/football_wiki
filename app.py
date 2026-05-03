@@ -43,7 +43,9 @@ st.markdown("""
     div[data-testid="metric-container"] { background-color: #ffffff; border: 1px solid #e3e8f0; border-radius: 12px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
     .stButton > button { background: linear-gradient(135deg, #1a237e, #1565c0); color: white !important; border: none; border-radius: 10px; font-weight: 600; font-family: 'Inter', sans-serif; padding: 0.55rem 1.8rem; font-size: 0.95rem; box-shadow: 0 3px 10px rgba(26,35,126,0.25); transition: opacity 0.2s, transform 0.15s; }
     .stButton > button:hover { opacity: 0.9; transform: translateY(-1px); }
-    .stTextInput > div > div > input, .stTextArea > div > div > textarea { background-color: #ffffff; border: 1.5px solid #c5cae9; border-radius: 10px; font-family: 'Inter', sans-serif; color: #1e1e2e; font-size: 0.95rem; }
+    .stTextInput > div > div > input, .stTextArea > div > div > textarea { background-color: #ffffff; border: 1.5px solid #c5cae9; border-radius: 10px; font-family: 'Inter', sans-serif; color: #1e1e2e !important; font-size: 0.95rem; }
+    .stTextArea textarea { color: #1e1e2e !important; background-color: #ffffff !important; }
+    .stTextArea textarea:disabled { color: #1e1e2e !important; -webkit-text-fill-color: #1e1e2e !important; opacity: 1 !important; }
     .stTabs [data-baseweb="tab-list"] { gap: 6px; background-color: #e8eaf6; border-radius: 12px; padding: 5px; }
     .stTabs [data-baseweb="tab"] { border-radius: 9px; padding: 8px 20px; font-family: 'Inter', sans-serif; font-weight: 500; color: #5c6370; }
     .stTabs [aria-selected="true"] { background-color: #ffffff !important; color: #1a237e !important; box-shadow: 0 2px 6px rgba(26,35,126,0.1); font-weight: 600 !important; }
@@ -63,11 +65,11 @@ def load_model():
         encode_kwargs={"normalize_embeddings": True}
     )
 
-LONG_SAMPLE_TEXT = """Football (nogomet) je ekipni sport, ki ga igrata dve ekipi z enajstimi igralci z okroglo zogo. Je najbolj priljubljen sport na svetu z vec kot 250 milijoni igralcev v vec kot 200 drzavah. Igra poteka na pravokotnem igrišcu s travo ali umetno travo, z goloma na vsakem koncu.
+LONG_SAMPLE_TEXT = """Football is the world's most popular sport, played by over 250 million players across more than 200 countries. The game is governed internationally by FIFA, which was founded in Paris in 1904 and currently has 211 member associations. The modern rules of the game were codified in England in 1863 when the Football Association was established.
 
-Svetovno prvenstvo FIFA je najprestiznejs mednarodni nogometni turnir, ki poteka vsaka stiri leta. Brazilija je najuspesnejsa drzava s petimi naslovi, sledita ji Nemcija in Italija s stirimi. Svetovno prvenstvo 2022 v Katarju je dobila Argentina, Lionel Messi pa je koncno osvojil edini pokal, ki mu je manjkal v zbirki.
+The FIFA World Cup is the most prestigious football tournament in the world, held every four years since 1930. Brazil is the most successful nation with five titles, followed by Germany and Italy with four each. The 2022 tournament in Qatar was won by Argentina, with Lionel Messi finally claiming the one trophy missing from his collection.
 
-UEFA Liga prvakov je najprestiznejs klubsko tekmovanje na svetu. Real Madrid ima rekordnih 15 naslovov. Domace lige kot Premier liga, La Liga, Bundesliga in Serie A privabljajo milijarde gledalcev po vsem svetu."""
+At club level, the UEFA Champions League is the most watched annual club competition in the world. Real Madrid holds the record with 15 titles. Domestically, leagues such as the English Premier League, La Liga, Bundesliga, and Serie A attract billions of viewers worldwide."""
 
 DOCUMENTS = [
     """Football (also known as association football or soccer) is a team sport played between two teams
@@ -296,13 +298,13 @@ elif page == "Embeddings":
 elif page == "Chunking":
     st.title("Chunking Strategies")
     st.markdown("""
-    Nogometni clanki so predolgi za neposredno vgrajevanje. Razdelimo jih na
-    **koscke** — manjse dele, ki vsak dobi svoj vektor.
+    Football articles are too long to embed as a single block. We split them into
+    **chunks** — smaller pieces that each get their own vector.
 
-    Velikost koscka vpliva na kakovost iskanja:
-    - **Premajhni** = koscki izgubijo kontekst
-    - **Preveliki** = pomen se razredci
-    - **Ravno prav** = vsak koscek zajame eno koherentno idejo
+    Chunk size affects search quality:
+    - **Too small** = chunks lose context
+    - **Too big** = meaning gets diluted
+    - **Just right** = each chunk captures one coherent football topic
     """)
 
     sample_text = st.text_area("Text to chunk:", value=LONG_SAMPLE_TEXT, height=200)
@@ -312,7 +314,7 @@ elif page == "Chunking":
     tab1, tab2, tab3 = st.tabs(["Fixed-Size", "Sentence-Based", "LangChain Recursive"])
 
     with tab1:
-        st.markdown("**Fiksna velikost** razdeli besedilo vsakih N znakov, ne glede na vsebino.")
+        st.markdown("**Fixed-size chunking** splits text every N characters regardless of content. Simple but may cut mid-word or mid-sentence.")
         chunk_size = st.slider("Chunk size (characters)", 50, 500, 200, key="fixed_size")
         overlap = st.slider("Overlap (characters)", 0, 100, 30, key="fixed_overlap")
         chunks = []
@@ -327,7 +329,7 @@ elif page == "Chunking":
             st.text_area(f"Chunk {i+1} ({len(chunk)} chars)", chunk, height=80, key=f"fixed_{i}", disabled=True)
 
     with tab2:
-        st.markdown("**Na osnovi stavkov** razdeli pri mejah stavkov. Vsak koscek je cel stavek.")
+        st.markdown("**Sentence-based chunking** splits at sentence boundaries. Each chunk is a complete sentence, preserving grammatical structure.")
         sentences = re.split(r'(?<=[.!?])\s+', sample_text.strip())
         sentences = [s.strip() for s in sentences if s.strip()]
         st.write(f"**{len(sentences)} sentences** found")
@@ -335,7 +337,7 @@ elif page == "Chunking":
             st.text_area(f"Sentence {i+1} ({len(sent)} chars)", sent, height=60, key=f"sent_{i}", disabled=True)
 
     with tab3:
-        st.markdown("**LangChain RecursiveCharacterTextSplitter** najprej razdeli pri odstavkih, nato stavkih, nato besedah.")
+        st.markdown("**LangChain RecursiveCharacterTextSplitter** first tries to split at paragraph boundaries, then sentences, then words — keeping football context intact.")
         rc_size = st.slider("Chunk size", 50, 500, 200, key="rc_size")
         rc_overlap = st.slider("Overlap", 0, 100, 30, key="rc_overlap")
         from langchain.text_splitter import RecursiveCharacterTextSplitter
