@@ -8,4 +8,3 @@ sentence-transformers
 scikit-learn
 numpy
 plotly
-torch==2.0.1
